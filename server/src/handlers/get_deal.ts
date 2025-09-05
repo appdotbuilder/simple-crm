@@ -1,17 +1,29 @@
+import { db } from '../db';
+import { dealsTable } from '../db/schema';
 import { type Deal, type IdParam } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const getDeal = async (input: IdParam): Promise<Deal> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching a specific deal by ID from the database.
-    // It should return the deal record with customer and company information or throw an error if not found.
-    return Promise.resolve({
-        id: input.id,
-        description: 'Sample Deal',
-        amount: 10000,
-        status: 'New',
-        customer_id: 1,
-        company_id: 1,
-        created_at: new Date(),
-        updated_at: new Date()
-    } as Deal);
+  try {
+    // Query the deal by ID
+    const result = await db.select()
+      .from(dealsTable)
+      .where(eq(dealsTable.id, input.id))
+      .execute();
+
+    if (result.length === 0) {
+      throw new Error(`Deal with ID ${input.id} not found`);
+    }
+
+    const deal = result[0];
+    
+    // Convert numeric amount back to number
+    return {
+      ...deal,
+      amount: parseFloat(deal.amount)
+    };
+  } catch (error) {
+    console.error('Get deal failed:', error);
+    throw error;
+  }
 };

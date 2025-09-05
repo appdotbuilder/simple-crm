@@ -1,9 +1,28 @@
+import { db } from '../db';
+import { dealsTable } from '../db/schema';
 import { type IdParam } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const deleteDeal = async (input: IdParam): Promise<{ success: boolean }> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is deleting a deal record from the database.
-    // It should validate that the deal exists and delete the deal record.
-    // Returns a success indicator.
-    return Promise.resolve({ success: true });
+  try {
+    // First check if the deal exists
+    const existingDeal = await db.select()
+      .from(dealsTable)
+      .where(eq(dealsTable.id, input.id))
+      .execute();
+
+    if (existingDeal.length === 0) {
+      throw new Error(`Deal with ID ${input.id} not found`);
+    }
+
+    // Delete the deal record
+    await db.delete(dealsTable)
+      .where(eq(dealsTable.id, input.id))
+      .execute();
+
+    return { success: true };
+  } catch (error) {
+    console.error('Deal deletion failed:', error);
+    throw error;
+  }
 };

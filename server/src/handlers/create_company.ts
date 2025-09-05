@@ -1,17 +1,26 @@
+import { db } from '../db';
+import { companiesTable } from '../db/schema';
 import { type CreateCompanyInput, type Company } from '../schema';
 
 export const createCompany = async (input: CreateCompanyInput): Promise<Company> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new company record and persisting it in the database.
-    // It should validate the input, insert the record with timestamps, and return the created company.
-    return Promise.resolve({
-        id: 1, // Placeholder ID
+  try {
+    // Insert company record
+    const result = await db.insert(companiesTable)
+      .values({
         name: input.name,
         industry: input.industry,
         website: input.website,
         phone: input.phone,
-        address: input.address,
-        created_at: new Date(), // Placeholder date
-        updated_at: new Date() // Placeholder date
-    } as Company);
+        address: input.address
+      })
+      .returning()
+      .execute();
+
+    // Return the created company
+    const company = result[0];
+    return company;
+  } catch (error) {
+    console.error('Company creation failed:', error);
+    throw error;
+  }
 };
